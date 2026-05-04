@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>OOP Dart - Sesi 4: Polimorfisme & Abstraksi</title>
+  <title>Dart Generic - Sesi 6: Generic Dasar</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
@@ -207,653 +207,767 @@
 </head>
 <body>
 <header>
-  <h1>🧩 Polimorfisme & Abstraksi</h1>
-  <p class="subhead">Dart OOP — Sesi 4 | Runtime Polymorphism · Abstract Class · Interface · Static Members</p>
+  <h1>🧬 Generic Dasar di Dart</h1>
+  <p class="subhead">SESI 6 | Type Safety · Code Reusability · Compile-time Checking</p>
   <div class="badge">👩‍💻 Ratu Klarisa Rahadianti | 251410010 | SI2A</div>
 </header>
 
 <div class="container">
   <!-- RINGKASAN MATERI -->
   <div class="card">
-    <h2>📖 Rangkuman Materi (Slide 1–16)</h2>
+    <h2>📖 Rangkuman Materi Generic (Slide 1–16)</h2>
     <ul style="margin-left: 1.5rem; display: flex; flex-direction: column; gap: 0.4rem;">
-      <li>🔹 <strong>Polimorfisme</strong> : objek child dapat diperlakukan sebagai tipe parent (runtime via overriding).</li>
-      <li>🔹 <strong>is & as</strong> : pengecekan tipe & casting aman.</li>
-      <li>🔹 <strong>Abstraksi</strong> : menyembunyikan detail, fokus ke "apa". Dart gunakan <code>abstract class</code> dan <code>interface class</code>.</li>
-      <li>🔹 <strong>Abstract class</strong> : tidak bisa diinstansiasi, bisa punya method konkret & abstrak.</li>
-      <li>🔹 <strong>Interface</strong> : kontrak penuh, class mengimplementasi dengan <code>implements</code> (multiple).</li>
-      <li>🔹 <strong>extends vs implements</strong> : "is-a" vs "can-do".</li>
-      <li>🔹 <strong>Static members</strong> : milik class, diakses via ClassName. Berguna untuk utility.</li>
-      <li>🔹 <strong>Manfaat</strong> : fleksibel, mudah diperluas, kode reusable, maintainability tinggi.</li>
+      <li> <strong>Generic</strong> : fitur untuk membuat kode bekerja dengan berbagai tipe data namun tetap aman terhadap tipe.</li>
+      <li> <strong>Manfaat</strong> : type safety (compile-time), code reusability, tanpa casting manual.</li>
+      <li> <strong>Sintaks</strong> : <code>class Box&lt;T&gt; { T data; }</code> , fungsi <code>T myFunc&lt;T&gt;(T value)</code>.</li>
+      <li> <strong>Multiple parameter</strong> : <code>class Pair&lt;K, V&gt;</code>.</li>
+      <li> <strong>Batasan tipe</strong> : <code>extends</code> (misal <code>T extends num</code>).</li>
+      <li> <strong>Type inference</strong> : Dart bisa menebak tipe generic dari konteks.</li>
+      <li> <strong>Perbandingan</strong> : Generic lebih aman dibanding <code>dynamic</code> atau <code>Object</code>.</li>
+      <li> <strong>Contoh nyata</strong> : <code>List&lt;E&gt;</code>, <code>Map&lt;K,V&gt;</code>, <code>Cache&lt;T&gt;</code>.</li>
     </ul>
   </div>
 
-   <!-- ========== DEMONSTRASI KONSEP DARI SLIDE ========== -->
+  <!-- PENGANTAR GENERIC -->
   <div class="card">
-    <h2>🎭 Pewarisan</h2>
-    <div class="desc">Inheritance: extends keyword</div>
-    <div class="desc">super() untuk panggil constructor parent</div>
-    <div class="desc">@override untuk override method</div>
-    <div class="desc">Contoh:</div>
-    <pre><code>
-//Nama: Ratu Klarisa
-//NIM:251410010
+    <h2> Apa itu Generic?</h2>
+    <p><strong>Generic</strong> adalah fitur yang memungkinkan kelas, fungsi, atau interface dapat bekerja dengan berbagai tipe data tanpa mengorbankan keamanan tipe. Dart mendukung generic dengan type parameter seperti <code>&lt;T&gt;</code>.</p>
+    <p><strong>Manfaat:</strong></p>
+    <ul>
+      <li>Type safety – error terdeteksi saat kompilasi</li>
+      <li>Code reusability – satu kelas untuk banyak tipe</li>
+      <li>Compile-time checking – tidak perlu casting manual</li>
+    </ul>
+  </div>
+
+  <!-- MASALAH TANPA GENERIC -->
+  <div class="card">
+    <h2>Masalah Tanpa Generic (dynamic)</h2>
+    <p>Tanpa generic, Box menggunakan dynamic sehingga fleksibel tetapi tidak aman karena berpotensi menimbulkan runtime error.</p>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Sukses</p>
+    <p>Program berhasil dieksekusi karena tipe data yang dikirim dan diterima sudah sesuai, sehingga tidak terjadi kesalahan selama proses</p>
+    <p>kompilasi maupun saat runtime.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
+
+class Box {
+  dynamic data; // Bisa apa saja
+
+  Box(this.data);
+}
+
+void main() {
+  var box = Box(42);
+  int value = box.data; // Bisa error saat runtime
+  print(value);
+}</code></pre>
+    <button class="btn-run" onclick="openImage('ss1.png')">Lihat Capture</button>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Eror</p>
+    <p>Program Error terjadi karena data String dimasukkan ke tempat yang seharusnya berisi Integer.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
+
+class Box {
+  dynamic data; // Bisa apa saja
+  Box(this.data);
+}
+
+void main() {
+  var box = Box("Hello");
+  int value = box.data; // ERROR karena string ke int
+  print(value);
+}</code></pre>
+ <button class="btn-run" onclick="openImage('ss1er.png')">Lihat Capture</button>
+ </div>
+
+  <!-- SOLUSI DENGAN GENERIC -->
+  <div class="card">
+    <h2> Solusi dengan Generic &lt;T&gt;</h2>
+    <div class="desc">Menggunakan type parameter memperkuat type safety.</div>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Sukses</p>
+    <p>Program berhasil karena tipe data yang dimasukkan sesuai dengan Generic &lt;T&gt; yang ditentukan.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
       
-class hewan {
-  void bersuara() => print('.....');
-}
-class Kucing extends Hewan {
-@override
-  void bersuara() => print('Meong');
-}
-void main() {
-  Kucing kucing = Kucing();
-  kucing.bersuara();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=2f66745eb29ac8b74e88568d46ac1737&run=true">Lihat Program</button>
-  </div>
+class Box&lt;T&gt; {
+  T data;
 
-  <div class="card">
-    <h2>🎭 Pengantar Polimorfisme</h2>
-    <p><strong>Arti:</strong> "Banyak bentuk" (poly = banyak, morph = bentuk)</p>
-    <p><strong>Konsep:</strong> Objek dari subclass dapat diperlakukan sebagai objek dari superclass</p>
-    <p><strong>Contoh:</strong> Semua Kucing , Anjing , Burung adalah Hewan</p>
-<p><strong>Tipe:</strong></p>
-<p><strong>i.Compile-time polymorphism:</strong> Method overloading (tidak didukung Dart)</p>
-<p><strong>ii.Runtime polymorphism:</strong> Method overriding (didukung Dart)</p>
-  </div>
-
-
-  <!-- ========== DEMONSTRASI KONSEP DARI SLIDE ========== -->
-  <div class="card">
-    <h2>🎭 Polimorfisme dengan Inheritance</h2>
-    <div class="desc">Referensi parent bisa menampung objek child. Method yang dipanggil sesuai objek asli (runtime).</div>
-    <pre><code>
-//Nama: Ratu Klarisa
-//NIM:251410010
-//Kelas: SI2A
-      
-// Bentuk, Lingkaran, Persegi
-abstract class Bentuk {
-  void gambar();
-}
-
-class Lingkaran extends Bentuk {
-  @override
-  void gambar() => print('Menggambar lingkaran ⚪');
-}
-
-class Persegi extends Bentuk {
-  @override
-  void gambar() => print('Menggambar persegi 🟩');
+  Box(this.data);
 }
 
 void main() {
-  Bentuk bentuk1 = Lingkaran();
-  Bentuk bentuk2 = Persegi();
-  bentuk1.gambar();  // lingkaran
-  bentuk2.gambar();  // persegi
+  var intBox = Box&lt;int&gt;(42); // T = int
+  var stringBox = Box&lt;String&gt;('Hello'); // T = String
+
+  int value = intBox.data; // Aman, pasti int
+
+  print(value);
+  print(stringBox.data);
 }</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=dfd681a536dff95d9ecdb757a764aac1&run=true">Lihat Program</button>
-  </div>
-
-    <div class="card">
-    <h2>🎭Manfaat Polimorfisme</h2>
-    <p> <strong>Fleksibilitas</strong>: Kode dapat bekerja dengan berbagai tipe</p>
-    <p><strong>Extensibility:</strong> Mudah  menambah tipe baru</p>
-    <p><strong>Code Reusability:</strong> Method umum di superclass</p>
-    <p><strong>Maintainability:</strong> Perubahan mudah dikelola</p>
-  </div>
-
-
-  <div class="card">
-    <h2>🔍 Operator is dan as</h2>
-    <div class="desc">Cek tipe objek dan konversi aman.</div>
-    <p>is: Mengecek tipe objek</p>
-    <p>as: Casting tipe objek</p>
-    <pre><code>
-//Nama:Ratu Klarisa
-//NIM:251410010
-//Kelas:SI2A
-
-class Kendaraan {}
-class Mobil extends Kendaraan {
-  void klakson() => print('Tin! Tin!');
-}
-
-void main() {
-  Kendaraan k = Mobil();
-  if (k is Mobil) {
-    (k as Mobil).klakson();
-  }
-  // safe casting with as?
-  (k as Mobil?)?.klakson();
-}</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=d02382dfe2c22442f9bf97f28e8ae22c&run=true">Lihat Program</button>
-  </div>
-
-  <div class="card">
-    <h2>🐾 Praktik 1 – Polimorfisme dengan List Hewan</h2>
-    <p>Membuat list hewan dengan berbagai objek subclass seperti Kucing, anjing, burung.Loop list, panggil method (bersuara)</p>
-    <pre><code>
-//Nama: Ratu Klarisa
-//Nim: 251410010
+   <button class="btn-run" onclick="openImage('ss2.png')">Lihat Capture</button>
+   <p style="margin-top: 0.5rem; font-weight: bold;">Program Eror</p>
+    <p>Program error karena tipe data yang dimasukkan tidak sesuai dengan Generic &lt;T&gt;, sehingga terjadi type mismatch</p>
+   <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-abstract class Hewan {
-  void bersuara();
-}
-class Kucing extends Hewan {
-  @override void bersuara() => print('Meong 🐱');
-}
-class Anjing extends Hewan {
-  @override void bersuara() => print('Guk guk 🐶');
-}
-class Burung extends Hewan {
-  @override void bersuara() => print('Cuit cuit 🐦');
-}
-void main() {
-  List&lt;Hewan&gt; hewanList = [Kucing(), Anjing(), Burung()];
-  for (var h in hewanList) {
-    h.bersuara();
-  }
-}</code></pre>
-    <button class="btn-run" style="margin: 15px 0;" data-src="https://dartpad.dev/embed-dart.html?id=695ad4c4a29c81e65974e59d9dddb21f&run=true">Lihat Program</button>
+class Box&lt;T&gt; {
+  T data;
 
-     <!-- ========== JAWABAN SLIDE 17 & CHALLENGE ========== -->
+  Box(this.data);
+}
+
+void main() {
+  var stringBox = Box&lt;String&gt;('Hello');
+
+  stringBox.data = 123; // ERROR
+}</code></pre>
+<button class="btn-run" onclick="openImage('ss2er.png')">Lihat Capture</button>
+   </div>
+
+  <!-- SINTAKS DASAR GENERIC -->
   <div class="card">
-    <h2>📌 Jawaban Soal(Bonus)Slide 17 – Pekerja & Polimorfisme(Bonus 1)</h2>
-    <div class="desc">1. Abstract class Pekerja dengan method bekerja(). 2. Tiga implementasi: Programmer, Dokter, Guru. 3. List&lt;Pekerja&gt; dan polimorfisme.</div>
-    <pre><code>//Nama: Ratu klarisa 
-//Nim: 251410010
+    <h2> Sintaks Generic (Class &amp; Fungsi)</h2>
+    <p>Generic pada class dan fungsi memungkinkan kode digunakan kembali untuk berbagai</p> 
+    <p>tipe data seperti int, String, atau double tanpa membuat kode baru, sehingga program menjadi</p> 
+    <p>lebih fleksibel, reusable, dan aman dari kesalahan tipe data.</p>
+    <pre><code>// Nama: Ratu Klarisa Rahadianti
+// NIM: 251410010
+// Kelas: SI2A
+
+class MyClass&lt;T&gt; {
+  T data;
+
+  MyClass(this.data);
+
+  T getData() {
+    return data;
+  }
+}
+
+T myFunc&lt;T&gt;(T value) {
+  return value;
+}
+
+void main() {
+  // Class Generic
+  var myIntClass = MyClass&lt;int&gt;(10);
+  var myStringClass = MyClass&lt;String&gt;('test');
+
+  print(myIntClass.getData());    // Output: 10
+  print(myStringClass.getData()); // Output: test
+
+  // Fungsi Generic
+  var intValue = myFunc&lt;int&gt;(100);
+  var stringValue = myFunc&lt;String&gt;('hello');
+
+  print(intValue);    // Output: 100
+  print(stringValue); // Output: hello
+}</code></pre>
+     <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=bd3cd8ace4d9cefa8d3bcb5d2058a3e4&amp;run=true">Lihat Program</button>
+  </div>
+
+  <!-- CONTOH CLASS BOX LENGKAP -->
+  <div class="card">
+    <h2>Contoh kelas Box &lt;T&gt;</h2>
+    <p>Class Generic Box &lt;T&gt; memungkinkan penyimpanan berbagai tipe data seperti int, String, dan double dalam satu</p>
+    <p>class yang sama, sehingga kode menjadi lebih fleksibel, reusable, dan aman dari kesalahan tipe data.”</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A 
+
+class Box&lt;T&gt; {
+  T? _value; // Tipe data T, nullable
+
+  Box(this._value); // Constructor
+
+  T? get value => _value; // Getter
+
+  void setValue(T value) {
+    _value = value;
+  }
+}
+
+void main() {
+  // Menggunakan Box dengan tipe data int
+  var intBox = Box&lt;int&gt;(10);
+  print('Int Box Value: ${intBox.value}');
+  // Output: Int Box Value: 10
+
+  intBox.setValue(20);
+  print('Int Box Value After Set: ${intBox.value}');
+  // Output: Int Box Value After Set: 20
+
+  // Menggunakan Box dengan tipe data String
+  var stringBox = Box&lt;String&gt;('Hello, Generic!');
+  print('String Box Value: ${stringBox.value}');
+  // Output: String Box Value: Hello, Generic!
+
+  stringBox.setValue('Hello World');
+  print('String Box Value After Set: ${stringBox.value}');
+  // Output: String Box Value After Set: Hello World
+
+  // Menggunakan Box dengan tipe data double
+  var doubleBox = Box&lt;double&gt;(3.14);
+  print('Double Box Value: ${doubleBox.value}');
+  // Output: Double Box Value: 3.14
+}</code></pre>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=73e372de476b0bd8bc2d0e073308ad7c&amp;run=true">Lihat Program</button>
+  </div>
+
+  <!-- MULTIPLE TYPE PARAMETER (PAIR) -->
+  <div class="card">
+    <h2> Multiple Type Parameter: Pair&lt;K,V&gt;</h2>
+    <p>Generic dengan multiple type parameter Pair&lt;K,V&gt; memungkinkan satu class menyimpan dua data dengan tipe berbeda,</p>
+    <p>seperti String dan int atau int dan double, sehingga kode menjadi lebih fleksibel, reusable, dan tetap type-safe.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-// Abstract class
-abstract class Pekerja {
-  void bekerja(); // abstract method
+class Pair&lt;K, V&gt; {
+  K key;
+  V value;
 
-  void info() {
-    print('Saya adalah seorang pekerja');
-  }
-}
+  Pair(this.key, this.value);
 
-// Class turunan
-class Programmer extends Pekerja {
-  @override
-  void bekerja() {
-    print('Programmer sedang coding');
-  }
-}
-
-class Dokter extends Pekerja {
-  @override
-  void bekerja() {
-    print('Dokter sedang mengobati pasien');
-  }
-}
-
-class Guru extends Pekerja {
-  @override
-  void bekerja() {
-    print('Guru sedang mengajar');
+  void printPair() {
+    print('Key: $key, Value: $value');
   }
 }
 
 void main() {
-  // Polimorfisme (List Pekerja)
-  List<Pekerja> pekerjaList = [
-    Programmer(),
-    Dokter(),
-    Guru()
-  ];
+  // Pair dengan tipe data String dan int
+  var pair1 = Pair&lt;String, int&gt;('age', 30);
+  pair1.printPair(); // Output: Key: age, Value: 30
 
-  for (var p in pekerjaList) {
-    p.info();
-    p.bekerja();
-    print('---');
-  }
+  // Pair dengan tipe data String dan String
+  var pair2 = Pair&lt;String, String&gt;('name', 'Alice');
+  pair2.printPair(); // Output: Key: name, Value: Alice
+
+  // Pair dengan tipe data int dan double
+  var pair3 = Pair&lt;int, double&gt;(1, 2.71);
+  pair3.printPair(); // Output: Key: 1, Value: 2.71
 }</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=d136b270bec418e26e894f676f02b542&run=true">Lihat Program</button>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=5be9fd8528ae19b35b46e9bff64d0032&amp;run=true">Lihat Program</button>
   </div>
 
+  <!-- FUNGSI GENERIC DUA TIPE -->
   <div class="card">
-    <h2>📱 4.Tablet – Multiple Inheritance dengan implements/mixins(Bonus 2)</h2>
-    <div class="desc">Class Tablet mewarisi kemampuan Komputer, Kamera, Telepon (multiple inheritance disimulasikan dengan implements).</div>
-    <pre><code>//Nama: Ratu Klarisa 
-//Nim: 251410010
+    <h2>🔄 menggabungkan dua nilai dengan tipe data yang berbeda.</h2>
+    <p>generic pada fungsi combine&lt;T,U&gt; memungkinkan penggabungan dua nilai dengan tipe data berbeda, seperti String, int, atau double,</p>
+    <p>sehingga fungsi menjadi lebih fleksibel, reusable, dan tetap type-safe.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-class Komputer {
-  void hitung() {
-    print('Komputer menghitung data');
-  }
+String combine&lt;T, U&gt;(T value1, U value2) {
+  return '$value1, $value2';
 }
 
-class Kamera {
-  void foto() {
-    print('Kamera mengambil gambar');
-  }
-}
+void main() {
+  var result1 = combine&lt;String, int&gt;('Number is ', 10);
+  print(result1); // Output: Number is , 10
 
-class Telepon {
-  void telepon() {
-    print('Telepon melakukan panggilan');
-  }
-}
+  var result2 = combine&lt;int, double&gt;(10, 20.5);
+  print(result2); // Output: 10, 20.5
+}</code></pre>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=7065e231a4e9078f80b55267d5ccf347&amp;run=true">Lihat Program</button>
+  </div>
 
-// Tablet mewarisi semuanya (implements)
-class Tablet implements Komputer, Kamera, Telepon {
-  @override
-  void hitung() {
-    print('Tablet menghitung data');
-  }
+  <!-- PEMBATASAN DENGAN EXTENDS -->
+  <div class="card">
+    <h2> Generic dengan extends</h2>
+    <div class="desc">Membatasi type parameter hanya pada turunan kelas tertentu.</div>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Sukses</p>
+    <p>Program Berhasil karena tipe data (int, double) sesuai dengan batasan T extends num.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
 
-  @override
-  void foto() {
-    print('Tablet mengambil gambar');
-  }
+class NumberBox&lt;T extends num&gt; {
+  T value;
 
-  @override
-  void telepon() {
-    print('Tablet melakukan panggilan');
+  NumberBox(this.value);
+
+  T getValue() {
+    return value;
   }
 }
 
 void main() {
-  Tablet tablet = Tablet();
-  tablet.hitung();
-  tablet.foto();
-  tablet.telepon();
+  var intBox = NumberBox&lt;int&gt;(10);
+  print("int box value: ${intBox.getValue()}");
+
+  var doubleBox = NumberBox&lt;double&gt;(3.14);
+  print("double box value: ${doubleBox.getValue()}");
 }</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=84ecab010a57f0f479a7e59ac1bf5749&run=true">Lihat Program</button>
+  <button class="btn-run" onclick="openImage('ss3.png')">Lihat Capture</button>
+  <p style="margin-top: 0.5rem; font-weight: bold;">Program Eror</p>
+    <p>Program Eror karena string bukan num</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
+
+class NumberBox&lt;T extends num&gt; {
+  T value;
+
+  NumberBox(this.value);
+
+  T getValue() {
+    return value;
+  }
+}
+
+void main() {
+  var stringBox = NumberBox&lt;String&gt;('test'); // ❌ ERROR
+}</code></pre>
+  <button class="btn-run" onclick="openImage('ss3er.png')">Lihat Capture</button>
+  </div>
+
+  <!-- TYPE INFERENCE -->
+  <div class="card">
+    <h2> Type Inference (Inferensi Tipe)</h2>
+    <div class="desc">Type Inference membuat Dart bisa menebak tipe data secara otomatis, sehingga penulisan kode menjadi lebih sederhana dan tetap aman</div>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
+
+T myFunc&lt;T&gt;(T value) {
+  return value;
+}
+
+void main() {
+  var intValue = myFunc(10); // Dart infer T = int
+  print(intValue.runtimeType); // Output: int
+
+  var stringValue = myFunc("test"); // Dart infer T = String
+  print(stringValue.runtimeType); // Output: String
+}</code></pre>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=62f4f480d74b9501243e90cd4116316a&amp;run=true">Lihat Program</button>
   </div>
 
   <div class="card">
-    <h2>🧮 5.MathUtils – Static Methods (Faktorial, Prima, Random, Rata2, Median)(Bonus 3)</h2>
-    <pre><code>//Nama:Ratu Klarisa
-//Nim: 251410010
-//Kelas:SI2A
+    <h2>Pembatasan tipe dan manfaatnya</h2>
+    <p>Lebih aman (type-safe): mengurangi error saat program jalan</p>
+    <p>Kode lebih jelas: tipe data terlihat langsung</p>
+    <p>Bisa pakai method khusus: sesuai tipe yang dibatasi</p>
+    <p>Mencegah tipe salah: tidak bisa asal input data</p>
+    <p>Desain lebih rapi: lebih terstruktur saat buat generic</p>
+  </div>
 
-import 'dart:math';
+  <div class="card">
+    <h2>Pembatasan Tipe pada Interface dan Class</h2>
+    <p>Generic extends membatasi tipe data yang digunakan, sehingga fungsi hanya menerima data yang sesuai dan lebih aman dari kesalahan tipe.</p>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Sukses</p>
+    <p>Program berhasil karena data yang dikirim (List dan Set) merupakan turunan dari Iterable, sehingga memenuhi batasan T extends Iterable&lt;dynamic&gt; dan dapat diproses dengan perulangan.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
 
-class MathUtils {
-  // Faktorial
-  static int faktorial(int n) {
-    if (n <= 1) return 1;
-    return n * faktorial(n - 1);
-  }
-
-  // Cek bilangan prima
-  static bool isPrima(int n) {
-    if (n < 2) return false;
-    for (int i = 2; i <= sqrt(n); i++) {
-      if (n % i == 0) return false;
-    }
-    return true;
-  }
-
-  // Membulatkan
-  static double bulatkan(double angka, int digit) {
-    return double.parse(angka.toStringAsFixed(digit));
-  }
-
-  // Random integer
-  static int randomInt(int min, int max) {
-    return min + Random().nextInt(max - min + 1);
-  }
-
-  // Rata-rata
-  static double rataRata(List<int> data) {
-    return data.reduce((a, b) => a + b) / data.length;
-  }
-
-  // Median
-  static double median(List<int> data) {
-    data.sort();
-    int n = data.length;
-    if (n % 2 == 0) {
-      return (data[n ~/ 2 - 1] + data[n ~/ 2]) / 2;
-    } else {
-      return data[n ~/ 2].toDouble();
-    }
+void printIterable&lt;T extends Iterable&lt;dynamic&gt;&gt;(T iterable) {
+  for (var item in iterable) {
+    print(item);
   }
 }
 
 void main() {
-  print(MathUtils.faktorial(5));
-  print(MathUtils.isPrima(7));
-  print(MathUtils.bulatkan(3.14159, 2));
-  print(MathUtils.randomInt(1, 10));
-  print(MathUtils.rataRata([10, 20, 30]));
-  print(MathUtils.median([10, 20, 30, 40]));
+  printIterable&lt;List&lt;int&gt;&gt;([1, 2, 3]);
+  printIterable&lt;Set&lt;String&gt;&gt;({'apple', 'banana'});
 }</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=0c0578e0b81fc53b72eddf61115d650f&run=true">Lihat Program</button>
-  </div>
+    <button class="btn-run" onclick="openImage('ss4.png')">Lihat Capture</button>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Eror</p>
+    <p> Program error karena int bukan Iterable, sehingga tidak memenuhi batasan T extends Iterable&lt;dynamic&gt;.</p> 
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
 
+void printIterable&lt;T extends Iterable&lt;dynamic&gt;&gt;(T iterable) {
+  for (var item in iterable) {
+    print(item);
+  }
+}
+
+void main() {
+  printIterable&lt;int&gt;(10); // ❌ ERROR
+}</code></pre>
+    <button class="btn-run" onclick="openImage('ss4er.png')">Lihat Capture</button>
     </div>
 
   <div class="card">
-    <h2>Pengantar abstraksi</h2>
-    <p> <strong>Konsep:</strong> Proses menyembunyikan detail teknis implementasi dan hanya menampilkan fungsi utamanya.</p>
-<p><strong>Tujuan: </strong><ujuan:>
-<p>i.Menekankan pada “apa yang dilakukan” bukan “bagaimana cara melakukannya”</p>
-<p>ii.Menjadi aturan atau kontrak yang wajib diikuti</p>
-<p>iii.Memberikan kebebasan dalam pengembangan implementasi</p>
-<p><strong>Cara di Dart:</strong> Menggunakan abstract class dan interface</p>
-  </div>
-
-  <div class="card">
-    <h2>🧱 Abstract Class</h2>
-    <p>Abstract class adalah kelas yang tidak dapat dibuat objeknya secara langsung, melainkan digunakan sebagai dasar (parent) bagi kelas lain.</p>
-    <p>Kelas ini dapat berisi method abstract (tanpa isi) yang wajib diimplementasikan oleh subclass, serta method concrete (dengan isi) yang bisa</p>
-    <p>langsung digunakan.</p>
-    <p><strong>Contoh di dart:</strong></p>
-    <pre><code>//Nama: Ratu Klarisa
-//Nim: 251410010
+    <h2>Pembatasan Tipe dengan Class Abstract</h2>
+    <p>Pembatasan tipe dengan class abstract digunakan untuk membatasi Generic agar hanya menerima class yang merupakan turunan dari abstract class tersebut, sehingga penggunaan tipe data menjadi lebih terarah dan aman.</p>
+    <p style="margin-top: 0.5rem; font-weight: bold;">Program Sukses</p>
+    <p>Program sukses karena Dog dan Cat merupakan turunan Animal, sehingga memenuhi batasan T extends Animal.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
+abstract class Animal {
+  void makeSound();
+}
 
-abstract class Kendaraan {
-  String? merk; // Field
-
-  void start(); // Method abstract
-
-  void stop() { // Method concrete
-    print('Kendaraan berhenti');
+class Dog implements Animal {
+  @override
+  void makeSound() {
+    print('Woof!');
   }
 }
 
-class Mobil extends Kendaraan {
+class Cat implements Animal {
   @override
-  void start() {
-    print('Mobil $merk menyala');
+  void makeSound() {
+    print('Meow!');
+  }
+}
+
+class AnimalCage&lt;T extends Animal&gt; {
+  T animal;
+
+  AnimalCage(this.animal);
+
+  void sound() {
+    animal.makeSound();
   }
 }
 
 void main() {
-  Mobil mobil = Mobil();
-  mobil.merk = "Toyota";
+  var dogCage = AnimalCage&lt;Dog&gt;(Dog());
+  dogCage.sound();
 
-  mobil.start();
-  mobil.stop();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=d24478b49abb0e7d4e24d804d3cd0b55&run=true">Lihat Program</button>
-  </div>
-
-  <div class="card">
-    <h2>🧱 Abstract Method</h2>
-    <p>Abstract method adalah method yang tidak memiliki isi (tanpa implementasi) di dalam abstract class dan harus </p>
-    <p>diimplementasikan (di-override) oleh subclass. Method ini berfungsi sebagai “kontrak” yang wajib diikuti oleh </p>
-    <p>setiap kelas turunan.</p>
-    <pre><code>// Nama: Ratu Klarisa
-// Nim: 251410010
-// Kelas: SI2A
-
-abstract class AlatMusik {
-  void mainkan(); // Abstract method
-
-  void info() {
-    // Concrete method
-    print('Ini adalah alat musik');
-  }
-}
-
-class Gitar extends AlatMusik {
-  @override
-  void mainkan() {
-    print('Jreng jreng...');
-  }
-}
-
-void main() {
-  Gitar gitar = Gitar();
-  gitar.info();
-  gitar.mainkan();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=b155cb026bb5a1db67fdd7033d11ef74&run=true">Lihat Program</button>
-  </div>
-
-
-  <div class="card">
-    <h2>🛸 Interface (implements)</h2>
-    <p>Interface di Dart (Sejak Dart 3.0)</p>
-    <p>Interface adalah struktur yang digunakan untuk mendefinisikan method tanpa implementasi sebagai</p>
-    <p>“kontrak” yang harus dipenuhi oleh class lain. Di Dart, setiap class secara otomatis dapat menjadi interface</p>
-    <p>(implicit interface), dan keyword interface digunakan untuk memperjelas peran tersebut.</p>
-    <pre><code>//Nama: Ratu Klarisa
-//Nim: 251410010
+  var catCage = AnimalCage&lt;Cat&gt;(Cat());
+  catCage.sound();
+}</code></pre>
+   <button class="btn-run" onclick="openImage('ss5.png')">Lihat Capture</button>
+   <p style="margin-top: 0.5rem; font-weight: bold;">Program Eror</p>
+    <p>Program error karena String bukan turunan Animal, sehingga tidak memenuhi batasan T extends Animal.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-      abstract class Flyable {
-  void terbang();
+abstract class Animal {
+  void makeSound();
 }
 
-class Bird implements Flyable {
+class Dog implements Animal {
   @override
-  void terbang() {
-    print('Burung terbang tinggi');
+  void makeSound() {
+    print('Woof!');
   }
 }
 
-class Plane implements Flyable {
+class Cat implements Animal {
   @override
-  void terbang() {
-    print('Pesawat terbang cepat');
+  void makeSound() {
+    print('Meow!');
+  }
+}
+
+class AnimalCage&lt;T extends Animal&gt; {
+  T animal;
+
+  AnimalCage(this.animal);
+
+  void sound() {
+    animal.makeSound();
   }
 }
 
 void main() {
-  Bird burung = Bird();
-  Plane pesawat = Plane();
+  var stringCage = AnimalCage&lt;String&gt;("test"); // ❌ ERROR
+}</code></pre>
+   <button class="btn-run" onclick="openImage('ss5er.png')">Lihat Capture</button>
+    </div>
 
-  burung.terbang();
-  pesawat.terbang();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=617cda7b9238ca31283f55eda88a71c3&run=true">Lihat Program</button>
-  </div>
 
   <div class="card">
-    <h2>📐 Static Members (MathUtils)</h2>
-    <p><strong>Static members</strong> adalah properti atau method yang dimiliki oleh class itu</p>
-<p>sendiri, bukan oleh objek class. Static member diakses langsung melalui class name.</p>
-<p>Properti dan method static sangat berguna untuk membuat utility class</p>
-<p>atau menyimpan konstanta yang terkait dengan class, sehingga dapat diakses</p>
-<p>langsung tanpa perlu membuat objek.</p>
-    <pre><code>/Nama: Ratu Klarisa
-//Nim: 251410010
+    <h2>Praktik 1 - Generic Class dan fungsi</h2>
+    <p>1. Buat class Repository &lt;T&gt; dengan:</p>
+    <p>Method: save(T item) , T getById(int id) , List &lt;T&gt; getAll()</p>
+    <p>2. Buat fungsi generic swap&lt;T&gt;(List&lt;T&gt; list, int i, int j)</p>
+    <p>3. Buat class Triple&lt;A, B, C&gt; dengan 3 field</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A 
+
+class Repository&lt;T&gt; {
+  final Map&lt;int, T&gt; _data = {};
+
+  void save(int id, T item) {
+    _data[id] = item;
+  }
+
+  T? getById(int id) {
+    return _data[id];
+  }
+
+  List&lt;T&gt; getAll() {
+    return _data.values.toList();
+  }
+}
+
+void swap&lt;T&gt;(List&lt;T&gt; list, int i, int j) {
+  T temp = list[i];
+  list[i] = list[j];
+  list[j] = temp;
+}
+
+class Triple&lt;A, B, C&gt; {
+  A first;
+  B second;
+  C third;
+
+  Triple(this.first, this.second, this.third);
+}
+
+void main() {
+  // Repository
+  var repo = Repository&lt;String&gt;();
+  repo.save(1, "Halo");
+  repo.save(2, "Dunia");
+
+  print(repo.getById(1));
+  print(repo.getAll());
+
+  // swap
+  var list = [1, 2, 3];
+  swap(list, 0, 2);
+  print(list);
+
+  // Triple
+  var triple = Triple&lt;String, int, bool&gt;("Umur", 20, true);
+  print(triple.first);
+  print(triple.second);
+  print(triple.third);
+}</code></pre>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=0186eb047a6edd02ae2bf55f12891258&amp;run=true">Lihat Program</button>
+  </div>
+
+  <!-- PERBANDINGAN GENERIC vs DYNAMIC vs OBJECT -->
+  <div class="card">
+    <h2>⚖️ Generic vs dynamic vs Object</h2>
+    <table style="width:100%; border-collapse:collapse; background:#0f172a; border-radius:1rem; overflow:hidden;">
+      <thead><tr style="background:#1e293b;"><th>Aspek</th><th>Generic &lt;T&gt;</th><th>dynamic</th><th>Object</th></tr></thead>
+      <tbody>
+        <tr><td>Type Safety</td><td>✅ Compile-time</td><td>❌ Runtime</td><td>⚠️ Perlu casting</td></tr>
+        <tr><td>Fleksibilitas</td><td>Terbatas sesuai T</td><td>Sangat fleksibel</td><td>Terbatas</td></tr>
+        <tr><td>Performa</td><td>✅ Optimal</td><td>Ada overhead</td><td>✅ Optimal</td></tr>
+        <tr><td>Casting</td><td>Tidak perlu</td><td>Tidak perlu</td><td>Perlu eksplisit</td></tr>
+      </tbody>
+    </table>
+    <pre><code>class Box&lt;T&gt;{
+  T data;
+
+  Box(this.data);
+}
+
+void main() {
+  // Contoh perbedaan
+  Box&lt;int&gt; box1 = Box&lt;int&gt;(42); // Generic: aman
+  dynamic box2 = 42;// Dynamic: tidak aman
+  Object box3 = 42;// Object: perlu casting
+
+  print(box1.data);
+  print(box2);
+  print(box3);
+}</code></pre>
+<button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=6a0b89075c73f53a9f890d8cab1cd31c&amp;run=true">Lihat Program</button>
+  </div>
+
+  <!-- PENERAPAN: CACHE GENERIC -->
+  <div class="card">
+    <h2>Studi kasus - Cache Generic</h2>
+    <p>Generic pada class Cache&lt;T&gt; digunakan untuk menyimpan berbagai tipe data, seperti String dan object Product, dalam satu class yang sama, sehingga kode lebih fleksibel,
+     reusable, dan aman dari kesalahan tipe data</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-class MathUtils {
-static double pi = 3.14;
-static int add(int x, int y) {
-return x + y;
+class Cache&lt;T&gt; {
+  final Map&lt;String, T&gt; _storage = {};
+
+  void set(String key, T value) {
+    _storage[key] = value;
+  }
+
+  T? get(String key) {
+    return _storage[key];
+  }
+
+  void remove(String key) {
+    _storage.remove(key);
+  }
 }
+
+class Product {
+  String name;
+  int price;
+
+  Product(this.name, this.price);
 }
+
 void main() {
-print('Nilai pi : ${MathUtils.pi}');
-print('Result : ${MathUtils.add(10, 20)}');
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=9588fc99a3e4530b59b0ca7c609f54b6&run=true">Lihat Program</button>
+  var userCache = Cache&lt;String&gt;();
+  userCache.set('name', 'Alice');
+
+  var productCache = Cache&lt;Product&gt;();
+  productCache.set('p1', Product('Laptop', 1000));
+
+  print(userCache.get('name')); // Alice
+  print(productCache.get('p1')?.name); // Laptop
+}</code></pre>
+    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=5ec5d40206593cd2af7f0cac313c95a2&amp;run=true">Lihat Program</button>
   </div>
 
+  <!-- LATIHAN SOAL -->
   <div class="card">
-    <h2>💳 Praktik 2 – Sistem Pembayaran (Interface)</h2>
-    <pre><code>//Nama: Ratu Klarisa
-//Nim: 251410010
+    <h2> Latihan Soal (Slide 16)</h2>
+    <ol style="margin-left: 1.5rem;">
+      <li><strong>Repository&lt;T&gt;</strong> : method <code>save(T item)</code>, <code>T getById(int id)</code>, <code>List&lt;T&gt; getAll()</code>.</li>
+      <li><strong>Fungsi swap&lt;T&gt;</strong> : <code>swap&lt;T&gt;(List&lt;T&gt; list, int i, int j)</code> menukar elemen.</li>
+      <li><strong>Class Triple&lt;A, B, C&gt;</strong> : tiga field dengan tipe A, B, C.</li>
+    </ol>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-abstract class MetodePembayaran {
-  void bayar(double jumlah);
-}
+class Repository&lt;T&gt; {
+  final List&lt;T&gt; _items = [];
 
-class KartuKredit implements MetodePembayaran {
-  @override
-  void bayar(double jumlah) {
-    print('Bayar $jumlah dengan Kartu Kredit');
+  void save(T item) {
+    _items.add(item);
+  }
+
+  T getById(int id) {
+    return _items[id];
+  }
+
+  List&lt;T&gt; getAll() {
+    return _items;
   }
 }
 
-class EWallet implements MetodePembayaran {
-  @override
-  void bayar(double jumlah) {
-    print('Bayar $jumlah dengan E-Wallet');
-  }
+// Fungsi swap
+void swap&lt;T&gt;(List&lt;T&gt; list, int i, int j) {
+  T temp = list[i];
+  list[i] = list[j];
+  list[j] = temp;
 }
 
-class Tunai implements MetodePembayaran {
-  @override
-  void bayar(double jumlah) {
-    print('Bayar $jumlah dengan Tunai');
-  }
+// Class Triple
+class Triple&lt;A, B, C&gt; {
+  A first;
+  B second;
+  C third;
+
+  Triple(this.first, this.second, this.third);
 }
 
 void main() {
-  MetodePembayaran metode1 = KartuKredit();
-  MetodePembayaran metode2 = EWallet();
-  MetodePembayaran metode3 = Tunai();
+  // 1. Repository
+  var repo = Repository&lt;String&gt;();
+  repo.save('Laptop');
+  repo.save('Mouse');
+  repo.save('Keyboard');
 
-  metode1.bayar(50000);
-  metode2.bayar(25000);
-  metode3.bayar(10000);
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=c38c45167aa8036c5a2cf884bb41698f&run=true">Lihat Program</button>
-  </div>
+  print('Data pertama: ${repo.getById(0)}');
+  print('Semua data: ${repo.getAll()}');
 
-  <div class="card">
-    <h2>Studi kasus: Sistem Bentuk Geometri</h2>
-    <pre><code>//Nama: Ratu Klarisa 
-//Nim: 251410010
+  // 2. Swap
+  List&lt;int&gt; angka = [10, 20, 30];
+  swap(angka, 0, 2);
+
+  print('Hasil swap: $angka');
+
+  // 3. Triple
+  var data = Triple&lt;String, int, double&gt;(
+    'Alice',
+    20,
+    85.5,
+  );
+
+  print('Nama: ${data.first}');
+  print('Umur: ${data.second}');
+  print('Nilai: ${data.third}');
+}</code></pre>
+     <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=fd22ea62ec97846e18d9cf4c2d8c0e5b&amp;run=true">Lihat Program</button>
+     
+      <p style="margin-top: 0.5rem; font-weight: bold;">membuat sistem repository generic</p>
+     <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
 //Kelas: SI2A
 
-abstract class Bentuk {
-  double hitungLuas();
-  double hitungKeliling();
-  
-  void info() {
-    print('Luas: ${hitungLuas()}, Keliling: ${hitungKeliling()}');
+class Repository&lt;T&gt; {
+  final List&lt;T&gt; _data = [];
+
+  void save(T item) {
+    _data.add(item);
+  }
+
+  T getById(int index) {
+    return _data[index];
+  }
+
+  List&lt;T&gt; getAll() {
+    return _data;
+  }
+
+  void delete(int index) {
+    _data.removeAt(index);
   }
 }
 
-class Persegi extends Bentuk {
-  double sisi;
-  Persegi(this.sisi);
-  
-  @override
-  double hitungLuas() => sisi * sisi;
-  
-  @override
-  double hitungKeliling() => 4 * sisi;
+class User {
+  String name;
+
+  User(this.name);
 }
 
-class Lingkaran extends Bentuk {
-  double radius;
-  Lingkaran(this.radius);
-  
-  @override
-  double hitungLuas() => 3.14 * radius * radius;
-  
-  @override
-  double hitungKeliling() => 2 * 3.14 * radius;
+class Product {
+  String name;
+  int price;
+
+  Product(this.name, this.price);
 }
 
 void main() {
-  Persegi p = Persegi(4);
-  Lingkaran l = Lingkaran(7);
+  // Repository User
+  var userRepo = Repository&lt;User&gt;();
+  userRepo.save(User('Alice'));
+  userRepo.save(User('Budi'));
 
-  p.info();
-  l.info();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=c8efeeafac20f6760ff79d8948d68821&run=true">Lihat Program</button>
+  print(userRepo.getById(0).name);
+  print(userRepo.getById(1).name);
+
+  // Repository Product
+  var productRepo = Repository&lt;Product&gt;();
+  productRepo.save(Product('Laptop', 1000));
+  productRepo.save(Product('Mouse', 200));
+
+  print(productRepo.getById(0).name);
+  print(productRepo.getById(1).price);
+}</code></pre>
+<button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=4ede06cbf95abcbbc5203922c2710083&amp;run=true">Lihat Program</button>
   </div>
-  
+</div>
+
+  <!-- KESIMPULAN -->
   <div class="card">
-    <h2>🎵 Challenge: MediaPlayer + Playable/Pausable</h2>
-    <div class="desc">Abstract MediaPlayer, interface Playable & Pausable, class AudioPlayer & VideoPlayer.</div>
-    <pre><code>//Nama: Ratu Klarisa 
-//Nim: 251410010
-//Kelas: SI2A
-
-// Abstract class
-abstract class MediaPlayer {
-  void info() {
-    print('Media Player aktif');
-  }
-}
-
-// Interface (pakai abstract class di Dart)
-abstract class Playable {
-  void play();
-}
-
-abstract class Pausable {
-  void pause();
-}
-
-// Class implementasi
-class AudioPlayer extends MediaPlayer implements Playable, Pausable {
-  @override
-  void play() {
-    print('Memutar audio...');
-  }
-
-  @override
-  void pause() {
-    print('Audio dijeda');
-  }
-}
-
-class VideoPlayer extends MediaPlayer implements Playable, Pausable {
-  @override
-  void play() {
-    print('Memutar video...');
-  }
-
-  @override
-  void pause() {
-    print('Video dijeda');
-  }
-}
-
-void main() {
-  AudioPlayer audio = AudioPlayer();
-  VideoPlayer video = VideoPlayer();
-
-  audio.info();
-  audio.play();
-  audio.pause();
-
-  print('---');
-
-  video.info();
-  video.play();
-  video.pause();
-}
-</code></pre>
-    <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=b311c2d137a30e000d96fa1277a8dd0b&run=true">Lihat Program</button>
-  </div>
-
-  <div class="card">
-    <h2>📘 Kesimpulan & Poin Penting</h2>
+    <h2>🏁 Kesimpulan &amp; Poin Penting</h2>
     <ul>
-      <li>✔ Polimorfisme memungkinkan kode fleksibel dan mudah dikembangkan.</li>
-      <li>✔ Abstract class menyediakan template dengan metode abstrak/konkret.</li>
-      <li>✔ Interface (implements) memaksa kelas mengimplementasikan seluruh kontrak.</li>
-      <li>✔ Static members berguna untuk fungsi utilitas tanpa instansiasi objek.</li>
-      <li>✔ Kombinasi semua konsep menciptakan arsitektur yang modular dan scalable.</li>
+      <li>✔ Generic memberikan <strong>type safety</strong> tanpa mengorbankan reusability.</li>
+      <li>✔ Tipe parameter tunggal <code>&lt;T&gt;</code> atau ganda <code>&lt;K,V&gt;</code>.</li>
+      <li>✔ <code>extends</code> membatasi tipe yang dapat digunakan.</li>
+      <li>✔ Generic lebih aman dibanding <code>dynamic</code> atau <code>Object</code>.</li>
+      <li>✔ Contoh nyata: <code>List&lt;E&gt;</code>, <code>Map&lt;K,V&gt;</code>, dan <code>Cache&lt;T&gt;</code>.</li>
     </ul>
   </div>
 </div>
 
 <footer>
-  <p>📁 Resume Sesi 4 – Polimorfisme & Abstraksi | Kode siap eksekusi di DartPad | Dibuat untuk GitHub Pages</p>
+  <p>📁 Resume Sesi 6 – Generic Dasar | Kode siap eksekusi di DartPad | Dibuat untuk GitHub Pages</p>
   <p>Ratu Klarisa Rahadianti — 251410010 — SI2A</p>
 </footer>
 
@@ -874,35 +988,87 @@ void main() {
   const modalIframe = document.getElementById('dartpadIframe');
   const closeBtn = document.getElementById('closeModalBtn');
   const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.querySelector('.modal-body');
 
   function openDartPad(embedUrl, programTitle) {
+    // Bersihkan modal-body
+    while (modalBody.firstChild) {
+      modalBody.removeChild(modalBody.firstChild);
+    }
+    // Tampilkan iframe
+    modalIframe.style.display = 'block';
+    modalBody.appendChild(modalIframe);
     modalIframe.src = embedUrl;
     modalTitle.innerText = programTitle;
     modal.style.display = 'flex';
   }
 
+  // Fungsi untuk menampilkan gambar capture (diperbaiki)
+  window.openImage = function(imgUrl) {
+    // Bersihkan modal-body
+    while (modalBody.firstChild) {
+      modalBody.removeChild(modalBody.firstChild);
+    }
+    // Sembunyikan iframe
+    modalIframe.style.display = 'none';
+    // Buat elemen gambar dengan style responsif
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    img.alt = 'Capture Gambar';
+    // Style sudah diatur di CSS global .modal-body img
+    // Tapi kita bisa tambahkan inline untuk memastikan
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '70vh';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.display = 'block';
+    img.style.margin = 'auto';
+    img.style.borderRadius = '12px';
+    img.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)';
+    img.style.objectFit = 'contain';
+    img.onerror = () => {
+      img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2"%3E%3Crect x="2" y="2" width="20" height="20" rx="2" /%3E%3Cpath d="M8 8 L16 16 M16 8 L8 16" /%3E%3Ctext x="12" y="20" font-size="8" text-anchor="middle" fill="red"%3EGagal load%3C/text%3E%3C/svg%3E';
+      img.style.width = '150px';
+      img.style.height = 'auto';
+    };
+    modalBody.appendChild(img);
+    modalTitle.innerText = '📸 Capture Gambar';
+    modal.style.display = 'flex';
+  };
+
+  // Event listener untuk tombol dengan data-src (DartPad)
   document.querySelectorAll('.btn-run').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
       const src = btn.getAttribute('data-src');
-      const card = btn.closest('.card');
-      const programName = card?.querySelector('h2')?.innerText || 'Program Dart';
       if (src) {
+        e.preventDefault();
+        const card = btn.closest('.card');
+        const programName = card?.querySelector('h2')?.innerText || 'Program Dart';
         openDartPad(src, programName);
-      } else {
-        alert('URL tidak tersedia');
       }
     });
   });
 
+  // Tutup modal
   closeBtn.addEventListener('click', () => {
     modal.style.display = 'none';
     modalIframe.src = 'about:blank';
+    while (modalBody.firstChild) {
+      modalBody.removeChild(modalBody.firstChild);
+    }
+    modalIframe.style.display = 'block';
+    modalBody.appendChild(modalIframe);
   });
 
   window.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.style.display = 'none';
       modalIframe.src = 'about:blank';
+      while (modalBody.firstChild) {
+        modalBody.removeChild(modalBody.firstChild);
+      }
+      modalIframe.style.display = 'block';
+      modalBody.appendChild(modalIframe);
     }
   });
 </script>
