@@ -456,7 +456,7 @@ void main() {
 
   <!-- FUNGSI GENERIC DUA TIPE -->
   <div class="card">
-    <h2>🔄 menggabungkan dua nilai dengan tipe data yang berbeda.</h2>
+    <h2>Menggabungkan dua nilai dengan tipe data yang berbeda.</h2>
     <p>generic pada fungsi combine&lt;T,U&gt; memungkinkan penggabungan dua nilai dengan tipe data berbeda, seperti String, int, atau double,</p>
     <p>sehingga fungsi menjadi lebih fleksibel, reusable, dan tetap type-safe.</p>
     <pre><code>//Nama: Ratu Klarisa Rahadianti 
@@ -522,7 +522,7 @@ class NumberBox&lt;T extends num&gt; {
 }
 
 void main() {
-  var stringBox = NumberBox&lt;String&gt;('test'); // ❌ ERROR
+  var stringBox = NumberBox&lt;String&gt;('test'); // ERROR
 }</code></pre>
   <button class="btn-run" onclick="openImage('ss3er.png')">Lihat Capture</button>
   </div>
@@ -591,7 +591,7 @@ void printIterable&lt;T extends Iterable&lt;dynamic&gt;&gt;(T iterable) {
 }
 
 void main() {
-  printIterable&lt;int&gt;(10); // ❌ ERROR
+  printIterable&lt;int&gt;(10); // ERROR
 }</code></pre>
     <button class="btn-run" onclick="openImage('ss4er.png')">Lihat Capture</button>
     </div>
@@ -676,7 +676,7 @@ class AnimalCage&lt;T extends Animal&gt; {
 }
 
 void main() {
-  var stringCage = AnimalCage&lt;String&gt;("test"); // ❌ ERROR
+  var stringCage = AnimalCage&lt;String&gt;("test"); // ERROR
 }</code></pre>
    <button class="btn-run" onclick="openImage('ss5er.png')">Lihat Capture</button>
     </div>
@@ -748,16 +748,15 @@ void main() {
   <!-- PERBANDINGAN GENERIC vs DYNAMIC vs OBJECT -->
   <div class="card">
     <h2>⚖️ Generic vs dynamic vs Object</h2>
-    <table style="width:100%; border-collapse:collapse; background:#0f172a; border-radius:1rem; overflow:hidden;">
-      <thead><tr style="background:#1e293b;"><th>Aspek</th><th>Generic &lt;T&gt;</th><th>dynamic</th><th>Object</th></tr></thead>
-      <tbody>
-        <tr><td>Type Safety</td><td>✅ Compile-time</td><td>❌ Runtime</td><td>⚠️ Perlu casting</td></tr>
-        <tr><td>Fleksibilitas</td><td>Terbatas sesuai T</td><td>Sangat fleksibel</td><td>Terbatas</td></tr>
-        <tr><td>Performa</td><td>✅ Optimal</td><td>Ada overhead</td><td>✅ Optimal</td></tr>
-        <tr><td>Casting</td><td>Tidak perlu</td><td>Tidak perlu</td><td>Perlu eksplisit</td></tr>
-      </tbody>
-    </table>
-    <pre><code>class Box&lt;T&gt;{
+    <p>Type Safety: Generic aman (dicek saat compile), dynamic tidak aman (runtime), Object cukup aman tapi terbatas.</p>
+    <p>Flexibility: dynamic paling fleksibel, Generic mengikuti tipe (terbatas), Object juga terbatas.</p>
+    <p>Performance: Generic dan Object optimal, dynamic lebih lambat karena ada overhead.</p>
+    <p>Casting: Generic & dynamic tidak perlu casting, Object perlu casting.</p>
+    <pre><code>//Nama: Ratu Klarisa Rahadianti 
+//NIM: 251410010
+//Kelas: SI2A
+      
+ class Box&lt;T&gt;{
   T data;
 
   Box(this.data);
@@ -833,124 +832,54 @@ void main() {
 //NIM: 251410010
 //Kelas: SI2A
 
-class Repository&lt;T&gt; {
-  final List&lt;T&gt; _items = [];
+class Stack&lt;T&gt; {
+  final List&lt;T&gt; _stack = [];
 
-  void save(T item) {
-    _items.add(item);
+  void push(T value) {
+    _stack.add(value);
   }
 
-  T getById(int id) {
-    return _items[id];
+  T? pop() {
+    return _stack.isNotEmpty ? _stack.removeLast() : null;
   }
 
-  List&lt;T&gt; getAll() {
-    return _items;
+  T? peek() {
+    return _stack.isNotEmpty ? _stack.last : null;
   }
 }
 
-// Fungsi swap
-void swap&lt;T&gt;(List&lt;T&gt; list, int i, int j) {
-  T temp = list[i];
-  list[i] = list[j];
-  list[j] = temp;
+List&lt;T&gt; mergeLists&lt;T&gt;(List&lt;T&gt; a, List&lt;T&gt; b) {
+  return List&lt;T&gt;.from(a)..addAll(b);
 }
 
-// Class Triple
-class Triple&lt;A, B, C&gt; {
-  A first;
-  B second;
-  C third;
+class Response&lt;T&gt; {
+  T? data;
+  String? error;
 
-  Triple(this.first, this.second, this.third);
+  Response({this.data, this.error});
 }
 
+// Testing
 void main() {
-  // 1. Repository
-  var repo = Repository&lt;String&gt;();
-  repo.save('Laptop');
-  repo.save('Mouse');
-  repo.save('Keyboard');
+  // Stack
+  var stack = Stack&lt;int&gt;();
+  stack.push(5);
+  stack.push(10);
+  print(stack.peek()); // 10
+  print(stack.pop());  // 10
 
-  print('Data pertama: ${repo.getById(0)}');
-  print('Semua data: ${repo.getAll()}');
+  // Merge Lists
+  var hasil = mergeLists([1, 2], [3, 4]);
+  print(hasil); // [1,2,3,4]
 
-  // 2. Swap
-  List&lt;int&gt; angka = [10, 20, 30];
-  swap(angka, 0, 2);
+  // Response
+  var res1 = Response&lt;String&gt;(data: "OK");
+  var res2 = Response&lt;String&gt;(error: "Gagal");
 
-  print('Hasil swap: $angka');
-
-  // 3. Triple
-  var data = Triple&lt;String, int, double&gt;(
-    'Alice',
-    20,
-    85.5,
-  );
-
-  print('Nama: ${data.first}');
-  print('Umur: ${data.second}');
-  print('Nilai: ${data.third}');
+  print(res1.data);
+  print(res2.error);
 }</code></pre>
      <button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=fd22ea62ec97846e18d9cf4c2d8c0e5b&amp;run=true">Lihat Program</button>
-     
-      <p style="margin-top: 0.5rem; font-weight: bold;">membuat sistem repository generic</p>
-     <pre><code>//Nama: Ratu Klarisa Rahadianti 
-//NIM: 251410010
-//Kelas: SI2A
-
-class Repository&lt;T&gt; {
-  final List&lt;T&gt; _data = [];
-
-  void save(T item) {
-    _data.add(item);
-  }
-
-  T getById(int index) {
-    return _data[index];
-  }
-
-  List&lt;T&gt; getAll() {
-    return _data;
-  }
-
-  void delete(int index) {
-    _data.removeAt(index);
-  }
-}
-
-class User {
-  String name;
-
-  User(this.name);
-}
-
-class Product {
-  String name;
-  int price;
-
-  Product(this.name, this.price);
-}
-
-void main() {
-  // Repository User
-  var userRepo = Repository&lt;User&gt;();
-  userRepo.save(User('Alice'));
-  userRepo.save(User('Budi'));
-
-  print(userRepo.getById(0).name);
-  print(userRepo.getById(1).name);
-
-  // Repository Product
-  var productRepo = Repository&lt;Product&gt;();
-  productRepo.save(Product('Laptop', 1000));
-  productRepo.save(Product('Mouse', 200));
-
-  print(productRepo.getById(0).name);
-  print(productRepo.getById(1).price);
-}</code></pre>
-<button class="btn-run" data-src="https://dartpad.dev/embed-dart.html?id=4ede06cbf95abcbbc5203922c2710083&amp;run=true">Lihat Program</button>
-  </div>
 </div>
 
   <!-- KESIMPULAN -->
